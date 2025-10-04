@@ -13,7 +13,7 @@ const Landing = () => {
         className="w-full md:w-1/2 h-[40vh] md:h-screen relative"
       >
         <img
-          src="/lovable-uploads/IMG_8915.PNG"
+          src="public/lovable-uploads/028c6cf3-1a69-4ed1-ab0e-029a02b2f8b5.png"
           alt="Tuhin Bhattacharya"
           className="w-full h-full object-cover object-center"
         />

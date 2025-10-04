@@ -73,7 +73,7 @@ const About = () => {
           className="relative overflow-hidden rounded-lg md:col-span-1"
           onClick={() => setShowAboutDialog(true)}
         >
-          <Card className="h-[300px] md:h-[400px] overflow-hidden">
+          <Card className="h-[200px] md:h-[300px] overflow-hidden">
             <img
               src="/lovable-uploads/IMG_8915.PNG"
               alt="Tuhin Bhattacharya"
