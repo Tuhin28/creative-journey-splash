@@ -1,8 +1,8 @@
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState } from "react";
-import { ExternalLink } from "lucide-react";
+import { useState, useRef } from "react";
+import { ExternalLink, X } from "lucide-react";
 
 interface Project {
   id: number;
@@ -19,6 +19,7 @@ interface Project {
 
 const Projects = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   const projects: Project[] = [
     {
@@ -93,6 +94,132 @@ const Projects = () => {
     }
   ];
 
+  const ProjectCard = ({ project, index }: { project: Project; index: number }) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [5, -5]), {
+      stiffness: 300,
+      damping: 30,
+    });
+    const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-5, 5]), {
+      stiffness: 300,
+      damping: 30,
+    });
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!cardRef.current) return;
+      const rect = cardRef.current.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+      const mouseXPos = e.clientX - rect.left;
+      const mouseYPos = e.clientY - rect.top;
+      const xPct = mouseXPos / width - 0.5;
+      const yPct = mouseYPos / height - 0.5;
+      mouseX.set(xPct);
+      mouseY.set(yPct);
+    };
+
+    const handleMouseLeave = () => {
+      mouseX.set(0);
+      mouseY.set(0);
+    };
+
+    return (
+      <motion.div
+        ref={cardRef}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: "preserve-3d",
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onMouseEnter={() => setHoveredId(project.id)}
+        onClick={() => setSelectedProject(project)}
+        className="group cursor-pointer"
+      >
+        <Card className="relative overflow-hidden h-full backdrop-blur-xl bg-white/80 dark:bg-black/80 border border-white/20 shadow-2xl hover:shadow-yellow-500/20 transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 via-transparent to-blue-500/0 group-hover:from-yellow-500/10 group-hover:to-blue-500/10 transition-all duration-500" />
+
+          <div className="relative h-48 md:h-56 overflow-hidden">
+            <motion.img
+              src={project.thumbnail}
+              alt={project.title}
+              className="w-full h-full object-cover"
+              animate={{
+                scale: hoveredId === project.id ? 1.1 : 1,
+              }}
+              transition={{ duration: 0.6 }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <motion.div
+              className="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-xs md:text-sm font-semibold shadow-lg"
+              initial={{ scale: 1 }}
+              animate={{ scale: hoveredId === project.id ? 1.1 : 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {project.company}
+            </motion.div>
+            <div className="absolute bottom-4 left-4 right-4">
+              <motion.div
+                initial={{ y: 0 }}
+                animate={{ y: hoveredId === project.id ? -5 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="inline-block bg-yellow-500/90 backdrop-blur-sm px-2 py-1 rounded text-xs text-white font-medium mb-2">
+                  {project.duration}
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          <div className="p-4 md:p-6 relative z-10">
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-500 transition-colors duration-300">
+              {project.title}
+            </h3>
+
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
+              {project.shortDescription}
+            </p>
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              {project.technologies.slice(0, 3).map((tech, idx) => (
+                <motion.span
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 * idx }}
+                  className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-xs font-medium"
+                >
+                  {tech}
+                </motion.span>
+              ))}
+              {project.technologies.length > 3 && (
+                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium">
+                  +{project.technologies.length - 3}
+                </span>
+              )}
+            </div>
+
+            <motion.div
+              className="flex items-center text-yellow-600 dark:text-yellow-500 text-sm font-semibold"
+              animate={{ x: hoveredId === project.id ? 5 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <span>Explore Project</span>
+              <ExternalLink className="ml-2 w-4 h-4" />
+            </motion.div>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 py-8 md:py-12 px-4 md:px-6">
       <div className="container mx-auto max-w-7xl">
@@ -102,9 +229,13 @@ const Projects = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-8 md:mb-12"
         >
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-600 to-yellow-500">
+          <motion.h1
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-600 to-yellow-500"
+            animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+            transition={{ duration: 5, repeat: Infinity }}
+          >
             Projects & Experience
-          </h1>
+          </motion.h1>
           <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Explore my journey through data analytics, business intelligence, and engineering projects
           </p>
@@ -112,88 +243,54 @@ const Projects = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {projects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              onClick={() => setSelectedProject(project)}
-            >
-              <Card className="overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300 h-full">
-                <div className="relative h-48 md:h-56 overflow-hidden">
-                  <img
-                    src={project.thumbnail}
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                  />
-                  <div className="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-xs md:text-sm font-semibold">
-                    {project.company}
-                  </div>
-                </div>
-
-                <div className="p-4 md:p-6">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                    {project.title}
-                  </h3>
-                  <p className="text-xs md:text-sm text-yellow-600 dark:text-yellow-500 font-medium mb-3">
-                    {project.duration}
-                  </p>
-                  <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 line-clamp-3 mb-4">
-                    {project.shortDescription}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.technologies.slice(0, 3).map((tech, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-xs font-medium"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                    {project.technologies.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium">
-                        +{project.technologies.length - 3} more
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center text-yellow-600 dark:text-yellow-500 text-sm font-semibold">
-                    <span>View Details</span>
-                    <ExternalLink className="ml-2 w-4 h-4" />
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
+            <ProjectCard key={project.id} project={project} index={index} />
           ))}
         </div>
 
         <Dialog open={!!selectedProject} onOpenChange={() => setSelectedProject(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20">
             {selectedProject && (
               <>
                 <DialogHeader>
-                  <DialogTitle className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                    {selectedProject.title}
-                  </DialogTitle>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
-                    <span className="text-sm md:text-base text-yellow-600 dark:text-yellow-500 font-semibold">
-                      {selectedProject.company}
-                    </span>
-                    <span className="hidden sm:inline text-gray-400">•</span>
-                    <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                      {selectedProject.duration}
-                    </span>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <DialogTitle className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white pr-8">
+                        {selectedProject.title}
+                      </DialogTitle>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                        <span className="text-sm md:text-base text-yellow-600 dark:text-yellow-500 font-semibold">
+                          {selectedProject.company}
+                        </span>
+                        <span className="hidden sm:inline text-gray-400">•</span>
+                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                          {selectedProject.duration}
+                        </span>
+                      </div>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.1, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setSelectedProject(null)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                    >
+                      <X className="w-6 h-6" />
+                    </motion.button>
                   </div>
                 </DialogHeader>
 
-                <div className="mt-4 space-y-6">
-                  <div className="relative h-48 md:h-64 rounded-lg overflow-hidden">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="mt-4 space-y-6"
+                >
+                  <div className="relative h-48 md:h-64 rounded-xl overflow-hidden">
                     <img
                       src={selectedProject.thumbnail}
                       alt={selectedProject.title}
                       className="w-full h-full object-cover"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   </div>
 
                   <div>
@@ -207,12 +304,18 @@ const Projects = () => {
                     <h4 className="text-lg md:text-xl font-semibold mb-3">Key Achievements</h4>
                     <ul className="space-y-2">
                       {selectedProject.achievements.map((achievement, idx) => (
-                        <li key={idx} className="flex items-start">
+                        <motion.li
+                          key={idx}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 * idx }}
+                          className="flex items-start"
+                        >
                           <span className="text-yellow-500 mr-2 mt-1 flex-shrink-0">•</span>
                           <span className="text-sm md:text-base text-gray-600 dark:text-gray-300">
                             {achievement}
                           </span>
-                        </li>
+                        </motion.li>
                       ))}
                     </ul>
                   </div>
@@ -221,23 +324,32 @@ const Projects = () => {
                     <h4 className="text-lg md:text-xl font-semibold mb-3">Technologies Used</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedProject.technologies.map((tech, idx) => (
-                        <span
+                        <motion.span
                           key={idx}
-                          className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-xs md:text-sm font-medium"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.05 * idx }}
+                          whileHover={{ scale: 1.1 }}
+                          className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-xs md:text-sm font-medium cursor-default"
                         >
                           {tech}
-                        </span>
+                        </motion.span>
                       ))}
                     </div>
                   </div>
 
-                  <div className="border-l-4 border-yellow-500 pl-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 rounded">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="border-l-4 border-yellow-500 pl-4 py-3 bg-gradient-to-r from-yellow-50 to-transparent dark:from-yellow-900/20 dark:to-transparent rounded"
+                  >
                     <h4 className="text-base md:text-lg font-semibold mb-2">Impact</h4>
                     <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 italic">
                       {selectedProject.impact}
                     </p>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               </>
             )}
           </DialogContent>

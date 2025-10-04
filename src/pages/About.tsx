@@ -68,36 +68,51 @@ const About = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 300 }}
-          className="relative overflow-hidden rounded-lg md:col-span-1"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          whileHover={{ y: -10 }}
+          className="relative overflow-hidden rounded-2xl md:col-span-1 group"
           onClick={() => setShowAboutDialog(true)}
         >
-          <Card className="h-[200px] md:h-[300px] overflow-hidden">
+          <div className="relative h-[300px] md:h-[400px] backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl rounded-2xl overflow-hidden cursor-pointer">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/20 via-transparent to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <img
               src="/lovable-uploads/IMG_8915.PNG"
               alt="Tuhin Bhattacharya"
-              className="w-full h-full object-cover object-center transition-transform duration-300 hover:scale-110 cursor-pointer"
+              className="w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-125"
             />
-          </Card>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+              <p className="text-sm font-medium">Click to know more</p>
+            </div>
+          </div>
         </motion.div>
 
         <motion.div
-          whileHover={{ scale: 1.02 }}
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          whileHover={{ y: -10 }}
           onClick={() => setShowAboutDialog(true)}
-          className="cursor-pointer md:col-span-2"
+          className="cursor-pointer md:col-span-2 group"
         >
-          <Card className="h-[300px] md:h-[400px] p-6 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors overflow-auto">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">About Me</h2>
-            <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base leading-relaxed">
-              I'm a Chemical engineer turned data analyst, currently pursuing PGDM in Big Data Analytics at Goa Institute of Management.
-              I build business intelligence and analytics solutions that turn messy data into clear, actionable decisions people actually use.
-              <br /><br />
-              At Celebal Technologies, I delivered a 54-page Power BI P&L built with 300+ DAX measures, improving report usability and
-              reducing query load times by ~40%. I combine engineering rigor with product-minded execution to deliver dashboards,
-              KPI frameworks, and performance-tuned reporting.
-            </p>
-          </Card>
+          <div className="h-[300px] md:h-[400px] backdrop-blur-xl bg-white/30 dark:bg-black/30 border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6 md:p-8 overflow-auto relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
+            <div className="relative z-10">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300">
+                About Me
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed">
+                I'm a Chemical engineer turned data analyst, currently pursuing PGDM in Big Data Analytics at Goa Institute of Management.
+                I build business intelligence and analytics solutions that turn messy data into clear, actionable decisions people actually use.
+                <br /><br />
+                At Celebal Technologies, I delivered a 54-page Power BI P&L built with 300+ DAX measures, improving report usability and
+                reducing query load times by ~40%. I combine engineering rigor with product-minded execution to deliver dashboards,
+                KPI frameworks, and performance-tuned reporting.
+              </p>
+            </div>
+          </div>
         </motion.div>
       </div>
 
